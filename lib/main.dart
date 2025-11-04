@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'core/domain/services/locator.dart';
+import 'core/logger/bloc_logger.dart';
 import 'core/routing/app_router.dart';
 
 void main() async {
@@ -8,15 +11,15 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initApp();
   await locatorSetUp();
- // await LocalStorage.init();
+
 
   runApp(const MyApp());
 }
 
 initApp() async {
   await ScreenUtil.ensureScreenSize();
- // Bloc.observer = blocLogger;
- // await LocalStorage.init();
+  Bloc.observer = blocLogger;
+  await Hive.initFlutter();
 }
 
 class MyApp extends StatelessWidget {

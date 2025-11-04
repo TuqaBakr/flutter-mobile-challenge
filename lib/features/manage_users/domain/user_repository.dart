@@ -3,7 +3,7 @@ import 'package:unifi_solutions/features/manage_users/domain/entities/user_entit
 import '../../../core/domain/error_handler/failures.dart';
 
 abstract class UserRepository {
-  Future<Either<Failure, List<UserEntity>>> fetchUsers({
+  Future<Either<Failure, List<UserEntity>>> fetchPaginatedUsers({
     required int page,
     required int perPage,
   });

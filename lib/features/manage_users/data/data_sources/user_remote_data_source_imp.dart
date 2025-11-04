@@ -8,34 +8,37 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
   UserRemoteDataSourceImpl({required this.dio});
 
+
   @override
-  Future<List<UserModel>> fetchUsers({
+  Future<List<UserModel>> fetchPaginatedUsers({
     required int page,
     required int perPage,
   }) async {
     try {
-       final response = await dio.get(
-        ApiEndpoints.users,
-        queryParameters: {
-          'page': page,
-          'per_page': perPage,
-        },
-      );
+      final response = await dio.get('/users', queryParameters: {
+        'page': page,
+        'per_page': perPage,
+      });
 
-      if (response.statusCode == 200) {
-         final dataList = response.data as List;
-        return dataList.map((json) => UserModel.fromJson(json as Map<String, dynamic>)).toList();
+      if (response.data is List) {
+        final List<dynamic> jsonList = response.data as List<dynamic>;
+
+        return jsonList.map((json) => UserModel.fromJson(json as Map<String, dynamic>)).toList();
+      } else {
+        throw DioException.badResponse(
+          statusCode: 200,
+          requestOptions: response.requestOptions,
+          response: response,
+        );
       }
 
-
-       throw DioException(
-           requestOptions: response.requestOptions,
-           response: response,
-           type: DioExceptionType.badResponse
-       );
-
-    } on DioException {
-      rethrow;
+    } on DioException catch (e) {
+      throw e;
+    } catch (e) {
+      throw DioException(
+          requestOptions: RequestOptions(path: '/users'),
+          type: DioExceptionType.unknown,
+          error: 'Parsing Error: ${e.toString()}');
     }
   }
 

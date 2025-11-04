@@ -39,4 +39,18 @@ class NativeService {
       return "Error: ${e.message}";
     }
   }
+
+  Future<void> showNativeToast({required String message, int durationSeconds = 2}) async {
+    try {
+      await _channel.invokeMethod('showToast', {
+        'message': message,
+        'duration': durationSeconds,
+      });
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        debugPrint("ERROR: Failed to show native toast: ${e.code} - ${e.message}");
+      }
+    }
+  }
 }
+

@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Environment
 import android.os.StatFs
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
@@ -27,12 +28,28 @@ class MainActivity : FlutterActivity() {
             when (call.method) {
                 "getStorageInfo" -> getStorageInfo(result)
                 "requestCameraPermission" -> requestCameraPermission(result)
+
+                "showToast" -> {
+                    val message = call.argument<String>("message")
+                    val duration = call.argument<Int>("duration") ?: 2
+
+                    if (message != null) {
+                        runOnUiThread {
+                            val toastDuration = if (duration > 2) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
+
+                            Toast.makeText(this@MainActivity, message, toastDuration).show()
+                        }
+                        result.success(null)
+                    } else {
+                        result.error("ARG_ERROR", "Message argument is missing for showToast.", null)
+                    }
+                }
+
                 else -> result.notImplemented()
             }
         }
     }
 
-    // --- Task 1: Device Storage Info (Android) ---
     private fun getStorageInfo(result: MethodChannel.Result) {
         try {
             val path = Environment.getDataDirectory()
@@ -61,9 +78,8 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    // --- Task 2: Native Permission Handling (Android) ---
     private fun requestCameraPermission(result: MethodChannel.Result) {
-        pendingResult = result // تخزين نتيجة الـ Flutter
+        pendingResult = result
 
         val permission = android.Manifest.permission.CAMERA
         val status = ContextCompat.checkSelfPermission(this, permission)
@@ -74,6 +90,9 @@ class MainActivity : FlutterActivity() {
             }
 
             PackageManager.PERMISSION_DENIED -> {
+                ActivityCompat.requestPermissions(this, arrayOf(permission), CAMERA_PERMISSION_REQUEST_CODE)
+            }
+            else -> {
                 ActivityCompat.requestPermissions(this, arrayOf(permission), CAMERA_PERMISSION_REQUEST_CODE)
             }
         }

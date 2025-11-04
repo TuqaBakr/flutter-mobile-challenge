@@ -6,7 +6,7 @@ import 'package:unifi_solutions/core/utils/theme/colors_manager.dart';
 import 'package:unifi_solutions/core/utils/theme/values_manager.dart';
 import '../constants/enums/toast_status.dart';
 
-class AppToast {
+  class AppToast {
   static showToast({
     required String description,
     required ToastStatus status,

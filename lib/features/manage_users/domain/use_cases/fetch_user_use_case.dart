@@ -12,6 +12,6 @@ class FetchUsersUseCase {
     required int page,
     required int perPage,
   }) async {
-    return await repository.fetchUsers(page: page, perPage: perPage);
+    return await repository.fetchPaginatedUsers(page: page, perPage: perPage);
   }
 }

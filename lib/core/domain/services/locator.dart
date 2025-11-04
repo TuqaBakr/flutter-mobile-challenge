@@ -1,5 +1,7 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hive_flutter/adapters.dart';
 import '../../../features/manage_users/data/data_sources/user_remote_data_source.dart';
 import '../../../features/manage_users/data/data_sources/user_remote_data_source_imp.dart';
 import '../../../features/manage_users/domain/use_cases/add_user_use_case.dart';
@@ -7,6 +9,7 @@ import '../../../features/manage_users/domain/use_cases/fetch_user_use_case.dart
 import '../../../features/manage_users/domain/user_repository.dart';
 import '../../../features/manage_users/domain/user_repository_imp.dart';
 import '../../../features/manage_users/presentation/cubit/user_cubit.dart';
+import '../../data/data_sources/user_local_data_source.dart';
 import '../../interceptors/token_interceptor.dart';
 
 
@@ -16,6 +19,9 @@ const String _gorestToken = '82fc1a11d403f8709daa5b98093089dbd23141da091abb443ce
 
 
 Future<void> locatorSetUp() async {
+  await Hive.initFlutter();
+  await Hive.openBox<String>('user_cache_box');
+
   if (getIt.isRegistered<Dio>()) {
     return;
   }
@@ -32,26 +38,37 @@ Future<void> locatorSetUp() async {
 
   getIt.registerLazySingleton<Dio>(() => dio);
 
+  getIt.registerLazySingleton<Connectivity>(() => Connectivity());
+
+  //remote data source
   getIt.registerLazySingleton<UserRemoteDataSource>(
-        () => UserRemoteDataSourceImpl(dio: getIt<Dio>()), // ⬅️ طلب صريح لـ Dio
+        () => UserRemoteDataSourceImpl(dio: getIt<Dio>()),
+  );
+  // Local Data Source (القسم المفقود)
+  getIt.registerLazySingleton<UserLocalDataSource>(
+        () => UserLocalDataSourceImpl(),
   );
   getIt.registerLazySingleton<UserRepository>(
-        () => UserRepositoryImpl(remoteDataSource: getIt<UserRemoteDataSource>()), // ⬅️ طلب صريح للواجهة المسجلة
+        () => UserRepositoryImpl(
+          remoteDataSource: getIt(),
+          localDataSource: getIt(),
+          connectivity: getIt(),
+        ),
   );
   getIt.registerLazySingleton<FetchUsersUseCase>(
-        () => FetchUsersUseCase(repository: getIt<UserRepository>()), // ⬅️ طلب صريح لـ UserRepository
+        () => FetchUsersUseCase(repository: getIt<UserRepository>()),
   );
 
 
   getIt.registerLazySingleton<AddUserUseCase>(
-        () => AddUserUseCase(  repository: getIt<UserRepository>(),), // ⬅️ طلب صريح لـ UserRepository
+        () => AddUserUseCase(  repository: getIt<UserRepository>(),),
   );
 
 
   getIt.registerFactory<UserCubit>(
         () => UserCubit(
-      fetchUsersUseCase: getIt<FetchUsersUseCase>(), // ⬅️ طلب صريح
-      addUserUseCase: getIt<AddUserUseCase>(), // ⬅️ طلب صريح
+      fetchUsersUseCase: getIt<FetchUsersUseCase>(),
+      addUserUseCase: getIt<AddUserUseCase>(),
     ),
   );
 }
