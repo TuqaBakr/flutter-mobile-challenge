@@ -33,7 +33,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       }
 
     } on DioException catch (e) {
-      throw e;
+      rethrow;
     } catch (e) {
       throw DioException(
           requestOptions: RequestOptions(path: '/users'),

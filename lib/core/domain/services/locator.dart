@@ -20,6 +20,11 @@ const String _gorestToken = '82fc1a11d403f8709daa5b98093089dbd23141da091abb443ce
 
 Future<void> locatorSetUp() async {
   await Hive.initFlutter();
+
+  if (!Hive.isAdapterRegistered(0)) {
+    Hive.registerAdapter(UserModelAdapter());
+  }
+
   await Hive.openBox<String>('user_cache_box');
 
   if (getIt.isRegistered<Dio>()) {
@@ -44,7 +49,7 @@ Future<void> locatorSetUp() async {
   getIt.registerLazySingleton<UserRemoteDataSource>(
         () => UserRemoteDataSourceImpl(dio: getIt<Dio>()),
   );
-  // Local Data Source (القسم المفقود)
+  // Local Data Source
   getIt.registerLazySingleton<UserLocalDataSource>(
         () => UserLocalDataSourceImpl(),
   );

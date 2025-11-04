@@ -12,6 +12,7 @@ class UserRepositoryImpl implements UserRepository {
   final UserRemoteDataSource remoteDataSource;
   final UserLocalDataSource localDataSource;
   final Connectivity connectivity;
+
   UserRepositoryImpl({ required this.remoteDataSource,
     required this.localDataSource,
     required this.connectivity,
@@ -61,8 +62,10 @@ class UserRepositoryImpl implements UserRepository {
         }
 
         return Right(userEntities);
-      } catch (e) {
-        final failure = e is Failure ? e : const LocalFailure(message: 'Unknown remote error');
+
+      } on DioException catch (e) {
+        final networkExceptions = RepositoryHandler.getDioException(e);
+        final failure = RepositoryHandler.getResultFailure(networkExceptions);
 
         try {
           final cachedUsers = await localDataSource.getCachedUsers();
@@ -71,14 +74,29 @@ class UserRepositoryImpl implements UserRepository {
           }
           return Left(failure);
         } on Exception {
-          return Left(LocalFailure(message: 'Failed to access local cache after network failure.'));
+          return const Left(LocalFailure(message: 'Failed to access local cache after network failure.'));
+        }
+
+      } catch (e) {
+        final failure = e is Failure
+            ? e
+            : LocalFailure(message: 'Unexpected runtime error: ${e.toString()}');
+
+        try {
+          final cachedUsers = await localDataSource.getCachedUsers();
+          if (cachedUsers.isNotEmpty) {
+            return Right(cachedUsers);
+          }
+          return Left(failure);
+        } on Exception {
+          return const Left(LocalFailure(message: 'Failed to access local cache after network failure.'));
         }
       }
     } else {
       try {
         final cachedUsers = await localDataSource.getCachedUsers();
         if (cachedUsers.isEmpty) {
-           return const Left(NetworkFailure(message: 'You are offline and no data is cached.'));
+          return const Left(NetworkFailure(message: 'You are offline and no data is cached.'));
         }
         return Right(cachedUsers);
       } catch (e) {

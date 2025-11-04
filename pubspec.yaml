@@ -7,7 +7,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.8.1
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -30,17 +30,20 @@ dependencies:
   animate_do: ^4.2.0
   flutter_styled_toast: ^2.2.1
   dartz: ^0.10.1
-  json_annotation: ^4.9.0
+  json_annotation: ^4.8.1
   hive_flutter: ^1.1.0
   connectivity_plus: ^7.0.0
+  hive: ^2.2.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^5.0.0
-  build_runner: ^2.10.1
-  json_serializable: ^6.11.1
+  flutter_lints: ^2.0.0
+  build_runner: ^2.4.9
+  json_serializable: ^6.7.1
+  json_annotation: ^4.8.1
+  hive_generator: ^2.0.1
 
 flutter:
 

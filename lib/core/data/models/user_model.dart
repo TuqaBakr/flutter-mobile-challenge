@@ -1,45 +1,70 @@
-  import 'package:json_annotation/json_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:hive_flutter/hive_flutter.dart'; // 💡 الاستيراد لـ Hive
 
 import '../../../features/manage_users/domain/entities/user_entity.dart';
 
-  part 'user_model.g.dart';
+part 'user_model.g.dart';
 
-  @JsonSerializable(checked: true)
-  class UserModel extends UserEntity {
+@JsonSerializable(checked: true)
+class UserModel extends UserEntity {
 
-    // يجب استخدام const في البناء إذا كان الكلاس يرث من Equatable
-    const UserModel({
-      required super.id,
-      required super.name,
-      required super.email,
-      required super.gender,
-      required super.status,
-    });
+  @HiveField(0)
+  @override
+  final int id;
 
-    factory UserModel.fromJson(Map<String, dynamic> json) =>
-        _$UserModelFromJson(json);
+  @HiveField(1)
+  @override
+  final String name;
 
-    Map<String, dynamic> toJson() => _$UserModelToJson(this);
+  @HiveField(2)
+  @override
+  final String email;
 
-    // دالة تحويل Model إلى Entity (صريحة وواضحة)
-    UserEntity toEntity() {
-      return UserEntity(
-        id: id,
-        name: name,
-        email: email,
-        gender: gender,
-        status: status,
-      );
-    }
+  @HiveField(3)
+  @override
+  final String gender;
 
-    // دالة مساعدة لإنشاء Model من Entity (مفيدة لـ POST)
-    factory UserModel.fromEntity(UserEntity entity) {
-      return UserModel(
-        id: entity.id,
-        name: entity.name,
-        email: entity.email,
-        gender: entity.gender,
-        status: entity.status,
-      );
-    }
+  @HiveField(4)
+  @override
+  final String status;
+
+  const UserModel({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.gender,
+    required this.status,
+  }) : super(
+    id: id,
+    name: name,
+    email: email,
+    gender: gender,
+    status: status,
+  );
+
+  factory UserModel.fromJson(Map<String, dynamic> json) =>
+      _$UserModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserModelToJson(this);
+
+  @override
+  UserEntity toEntity() {
+    return UserEntity(
+      id: id,
+      name: name,
+      email: email,
+      gender: gender,
+      status: status,
+    );
   }
+
+  factory UserModel.fromEntity(UserEntity entity) {
+    return UserModel(
+      id: entity.id,
+      name: entity.name,
+      email: entity.email,
+      gender: entity.gender,
+      status: entity.status,
+    );
+  }
+}
