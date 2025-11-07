@@ -1,8 +1,10 @@
 import 'package:dartz/dartz.dart';
+import 'package:unifi_solutions/core/data/models/base_model.dart';
 import 'package:unifi_solutions/features/manage_users/domain/entities/user_entity.dart';
 import '../../../core/domain/error_handler/failures.dart';
 
 abstract class UserRepository {
+
   Future<Either<Failure, List<UserEntity>>> fetchPaginatedUsers({
     required int page,
     required int perPage,

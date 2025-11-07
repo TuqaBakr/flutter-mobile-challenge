@@ -36,10 +36,10 @@ class _AddUserFormState extends State<AddUserForm> {
 
   void _addUser() {
     if (_formKey.currentState!.validate()) {
-      context.read<UserCubit>().addUser( name: _nameController.text,
-        email: _emailController.text,
-        gender: _gender,
-        status: _status,);
+      // context.read<UserCubit>().addUser( name: _nameController.text,
+      //   email: _emailController.text,
+      //   gender: _gender,
+      //   status: _status,);
     }
   }
 

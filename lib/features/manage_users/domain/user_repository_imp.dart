@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:unifi_solutions/features/manage_users/domain/user_repository.dart';
 import '../../../core/data/data_sources/user_local_data_source.dart';
+import '../../../core/domain/error_handler/exceptions.dart';
 import '../../../core/domain/error_handler/failures.dart';
 import '../../../core/domain/error_handler/repository_handler.dart';
 import '../data/data_sources/user_remote_data_source.dart';
@@ -19,27 +20,6 @@ class UserRepositoryImpl implements UserRepository {
   });
 
   @override
-  Future<Either<Failure, UserEntity>> addUser({
-    required String name,
-    required String email,
-    required String gender,
-    required String status,
-  }) async {
-    try {
-      final userModel = await remoteDataSource.addUser(
-        name: name,
-        email: email,
-        gender: gender,
-        status: status,
-      );
-      return Right(userModel.toEntity());
-    } on DioException catch (e) {
-      final networkExceptions = RepositoryHandler.getDioException(e);
-      return Left(RepositoryHandler.getResultFailure(networkExceptions));
-    }
-  }
-
-  @override
   Future<Either<Failure, List<UserEntity>>> fetchPaginatedUsers({
     required int page,
     required int perPage
@@ -50,13 +30,12 @@ class UserRepositoryImpl implements UserRepository {
 
     if (isOnline) {
       try {
-        final userModels = await remoteDataSource.fetchPaginatedUsers(
+        final userModels = await remoteDataSource.fetchPaginatedUsers2(
           page: page,
           perPage: perPage,
         );
 
-        final userEntities = userModels.map((model) => model.toEntity()).toList();
-
+        final userEntities = userModels.list.cast<UserEntity>();
         if (page == 1) {
           await localDataSource.cacheUsers(userEntities);
         }
@@ -102,6 +81,39 @@ class UserRepositoryImpl implements UserRepository {
       } catch (e) {
         return const Left(LocalFailure(message: 'Error accessing local cache.'));
       }
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> addUser({
+    required String name,
+    required String email,
+    required String gender,
+    required String status,
+  }) async {
+    final connectivityResult = await connectivity.checkConnectivity();
+
+    if (connectivityResult == ConnectivityResult.none) {
+      return const Left(NetworkFailure(message: 'No internet connection.'));
+    }
+
+    try {
+      final userModel = await remoteDataSource.addUser(
+        name: name,
+        email: email,
+        gender: gender,
+        status: status,
+      );
+      return Right(userModel);
+    }
+     on DuplicateEmailException catch (e) {
+      return Left(DuplicateEmailFailure(message: e.message, statusCode: 422));
+    }
+    on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, statusCode: 0));
+    }
+    catch (e) {
+      return Left(LocalFailure(message: 'An unknown error occurred during user creation: ${e.toString()}'));
     }
   }
 }

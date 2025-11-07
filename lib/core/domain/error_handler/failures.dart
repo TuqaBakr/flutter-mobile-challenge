@@ -25,6 +25,12 @@ class ValidationFailure extends Failure {
   const ValidationFailure({required super.message, required int super.statusCode});
 }
 
+// A special failure of duplicate Email
+class DuplicateEmailFailure extends ValidationFailure {
+  const DuplicateEmailFailure({super.message = 'The provided email is already in use.', super.statusCode = 422});
+}
+
+
 /// A general failure for unknown errors.
 class LocalFailure extends Failure {
   const LocalFailure({super.message = 'An unknown local error occurred'});

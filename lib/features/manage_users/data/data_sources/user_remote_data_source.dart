@@ -1,8 +1,10 @@
-import '../../../../core/data/models/user_model.dart';
+import 'package:unifi_solutions/core/data/models/user_model.dart';
+
+import '../../../../core/data/models/base_model.dart';
 
 abstract class UserRemoteDataSource{
 
-  Future<List<UserModel>> fetchPaginatedUsers({
+  Future<BaseModels> fetchPaginatedUsers2({
     required int page,
     required int perPage,
   });

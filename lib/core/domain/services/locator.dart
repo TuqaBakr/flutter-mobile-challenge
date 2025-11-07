@@ -11,7 +11,8 @@ import '../../../features/manage_users/domain/user_repository_imp.dart';
 import '../../../features/manage_users/presentation/cubit/user_cubit.dart';
 import '../../data/data_sources/user_local_data_source.dart';
 import '../../data/models/user_model.dart';
-import '../../interceptors/token_interceptor.dart';
+import 'RemoteDataSource.dart';
+import 'RemoteDataSourceImpl.dart';
 
 
 
@@ -29,7 +30,7 @@ Future<void> locatorSetUp() async {
 
   await Hive.openBox<String>('user_cache_box');
 
-  if (getIt.isRegistered<Dio>()) {
+  if (getIt.isRegistered<UserRemoteDataSource>()) {
     return;
   }
   final dio = Dio(
@@ -41,15 +42,19 @@ Future<void> locatorSetUp() async {
     ),
   );
 
-  dio.interceptors.add(GlobalApiInterceptor(bearerToken: _gorestToken));
+  //dio.interceptors.add(GlobalApiInterceptor(bearerToken: _gorestToken));
 
   getIt.registerLazySingleton<Dio>(() => dio);
 
   getIt.registerLazySingleton<Connectivity>(() => Connectivity());
 
+  getIt.registerLazySingleton<RemoteDataSource>(
+        () => RemoteDataSourceImpl(dio: getIt<Dio>()),
+  );
+
   //remote data source
   getIt.registerLazySingleton<UserRemoteDataSource>(
-        () => UserRemoteDataSourceImpl(dio: getIt<Dio>()),
+        () => UserRemoteDataSourceImpl(remoteDataSource: getIt<RemoteDataSource>()),
   );
   // Local Data Source
   getIt.registerLazySingleton<UserLocalDataSource>(
@@ -75,7 +80,7 @@ Future<void> locatorSetUp() async {
   getIt.registerFactory<UserCubit>(
         () => UserCubit(
       fetchUsersUseCase: getIt<FetchUsersUseCase>(),
-      addUserUseCase: getIt<AddUserUseCase>(),
+     // addUserUseCase: getIt<AddUserUseCase>(),
     ),
   );
 }

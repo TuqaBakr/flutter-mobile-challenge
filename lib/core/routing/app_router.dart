@@ -38,7 +38,7 @@ final GoRouter appRouter = GoRouter(
          return BlocProvider(
            create: (context) => UserCubit(
              fetchUsersUseCase: getIt<FetchUsersUseCase>(),
-             addUserUseCase: getIt<AddUserUseCase>(),
+            // addUserUseCase: getIt<AddUserUseCase>(),
            )..fetchUsers(),
            child: const UserManagementScreen(),
          );
